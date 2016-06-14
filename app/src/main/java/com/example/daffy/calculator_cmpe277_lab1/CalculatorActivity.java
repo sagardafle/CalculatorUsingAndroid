@@ -7,6 +7,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -171,7 +175,7 @@ public class CalculatorActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d("myTag" , "8 pressed");
-                mResultsView.append(mEightButton.getText().toString());
+                mResultsView.append(mEightButton.getText().toString()) ;
 
             }
         });
@@ -216,7 +220,7 @@ public class CalculatorActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d("myTag" , "+ pressed");
-                mResultsView.append(mAdditionButton.getText().toString());
+                mResultsView.append(" " +mAdditionButton.getText().toString() + " ");
 
             }
         });
@@ -231,7 +235,7 @@ public class CalculatorActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d("myTag" , "- pressed");
-                mResultsView.append(mSubtractionButton.getText().toString());
+                mResultsView.append(" " +mSubtractionButton.getText().toString() + " ");
 
             }
         });
@@ -245,7 +249,7 @@ public class CalculatorActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d("myTag" , "* pressed");
-                mResultsView.append(mMultiplicationButton.getText().toString());
+                mResultsView.append(" " +mMultiplicationButton.getText().toString() + " ");
 
             }
         });
@@ -259,7 +263,7 @@ public class CalculatorActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d("myTag" , "/ pressed");
-                mResultsView.append(mDivisionButton.getText().toString());
+                mResultsView.append(" " +mDivisionButton.getText().toString() + " ");
 
             }
         });
@@ -274,73 +278,192 @@ public class CalculatorActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d("myTag" , "= pressed");
-                //mResultsView.append(mComputeResults.getText().toString());
 
-                performOperations(mResultsView.getText().toString());
+                 String expression = mResultsView.getText().toString();
+                //String expression = "100 * 2 + 12 ";
 
+                int answer = expressionEvaluater(expression);
+                Log.d("FinalAns" , Integer.toString(answer));
+                mResultsView.append(" = " +Integer.toString(answer));
+                //performOperations(mResultsView.getText().toString());
             }
 
-            private void performOperations(String operationString) {
-                Log.d("myTag" , operationString);
+            private int expressionEvaluater(String expression) {
+                Log.d("The expression is " ,expression);
+                char[] tokens = expression.toCharArray();
 
+                // Stack for numbers: 'digits'
+                Stack<Integer> digits = new Stack<Integer>();
 
-                if(operationString.indexOf('+') > 0){
-                    computeResults(operationString.split("\\+"), '+');
-                }
-                if(operationString.indexOf('-') > 0){
-                    computeResults(operationString.split("-"), '-');
-                }
-                if(operationString.indexOf('*') > 0){
-                    computeResults(operationString.split("\\*"), '*');
-                }
-                if(operationString.indexOf('/') > 0){
-                    computeResults(operationString.split("/"), '/');
+                // Stack for Operators: 'operators'
+                Stack<Character> operators = new Stack<Character>();
+
+                for (int i = 0; i < tokens.length; i++)
+                {
+                    // Current token is a whitespace, skip it
+                    if (tokens[i] == ' ')
+                        continue;
+
+                    // Current token is a number, push it to stack for numbers
+                    if (tokens[i] >= '0' && tokens[i] <= '9')
+                    {
+                        StringBuffer sbuf = new StringBuffer();
+                        // There may be more than one digits in number
+                        while (i < tokens.length && tokens[i] >= '0' && tokens[i] <= '9')
+                            sbuf.append(tokens[i++]);
+                        digits.push(Integer.parseInt(sbuf.toString()));
+                    }
+
+                    // Current token is an opening brace, push it to 'operators'
+                    else if (tokens[i] == '(')
+                        operators.push(tokens[i]);
+
+                        // Closing brace encountered, solve entire brace
+                    else if (tokens[i] == ')')
+                    {
+                        while (operators.peek() != '(')
+                            digits.push(applyOp(operators.pop(), digits.pop(), digits.pop()));
+                        operators.pop();
+                    }
+
+                    // Current token is an operator.
+                    else if (tokens[i] == '+' || tokens[i] == '-' ||
+                            tokens[i] == '*' || tokens[i] == '/')
+                    {
+                        // While top of 'operators' has same or greater precedence to current
+                        // token, which is an operator. Apply operator on top of 'operators'
+                        // to top two elements in digits stack
+                        while (!operators.empty() && hasPrecedence(tokens[i], operators.peek()))
+                            digits.push(applyOp(operators.pop(), digits.pop(), digits.pop()));
+
+                        // Push current token to 'operators'.
+                        operators.push(tokens[i]);
+                    }
                 }
 
+                // Entire expression has been parsed at this point, apply remaining
+                // operators to remaining digits
+                while (!operators.empty())
+                    digits.push(applyOp(operators.pop(), digits.pop(), digits.pop()));
+
+                // Top of 'digits' contains result, return it
+                int finalans = digits.pop();
+                Log.d("digits Stack" , Integer.toString(finalans));
+                return finalans;
             }
 
-            private void computeResults(String[] numbers, char op) {
-               // String result = numbers[0] + op + numbers[1];
-                Log.d("numbers[0]" , numbers[0].toString());
-                Log.d("numbers[1]" , numbers[1].toString());
-                int result = 0;
-                switch (op) {
 
+
+            // Returns true if 'op2' has higher or same precedence as 'op1',
+            // otherwise returns false.
+            private boolean hasPrecedence(char op1, char op2)
+            {
+
+                Log.d("In ","hasPrecedence method");
+                if (op2 == '(' || op2 == ')')
+                    return false;
+                if ((op1 == '*' || op1 == '/') && (op2 == '+' || op2 == '-'))
+                    return false;
+                else
+                    return true;
+            }
+
+            // A utility method to apply an operator 'op' on operands 'a'
+            // and 'b'. Return the result.
+            private int applyOp(char op, int b, int a)
+            {
+                Log.d("In ","applyOp method");
+                switch (op)
+                {
                     case '+':
-                        result = Integer.parseInt(numbers[0])  + Integer.parseInt(numbers[1]);
-                        Log.d("finalresult" , String.valueOf(result));
-                        mResultsView.append("  = " +String.valueOf(result));
-                        break;
-
+                        return a + b;
                     case '-':
-                        result = Integer.parseInt(numbers[0]) - Integer.parseInt(numbers[1]);
-                        Log.d("finalresult" , String.valueOf(result));
-                        mResultsView.append("  = " +String.valueOf(result));
-                        break;
-
+                        return a - b;
                     case '*':
-                        result = Integer.parseInt(numbers[0]) * Integer.parseInt(numbers[1]);
-                        Log.d("finalresult" , String.valueOf(result));
-                        mResultsView.append("  = " +String.valueOf(result));
-                        break;
-
+                        return a * b;
                     case '/':
-                        result = Integer.parseInt(numbers[0]) / Integer.parseInt(numbers[1]);
-                        Log.d("finalresult" , String.valueOf(result));
-                        mResultsView.append("  = " +String.valueOf(result));
-                        break;
-
-                        }
-
-
+                        if (b == 0)
+                            throw new
+                                    UnsupportedOperationException("Cannot divide by zero");
+                        return a / b;
+                }
+                return 0;
             }
+
+
+
+//
+//
+//
+//
+//
+//            private void performOperations(String operationString) {
+//                Log.d("myTag" , operationString);
+//
+//
+//                if(operationString.indexOf('+') > 0){
+//                    computeResults(operationString.split("\\+"), '+');
+//                }
+//                if(operationString.indexOf('-') > 0){
+//                    computeResults(operationString.split("-"), '-');
+//                }
+//                if(operationString.indexOf('*') > 0){
+//                    computeResults(operationString.split("\\*"), '*');
+//                }
+//                if(operationString.indexOf('/') > 0){
+//                    computeResults(operationString.split("/"), '/');
+//                }
+//
+//            }
+//
+//            private void computeResults(String[] numbers, char op) {
+//                Log.d("numbers[0]" , numbers[0].toString());
+//                Log.d("numbers[1]" , numbers[1].toString());
+//                int result = 0;
+//                switch (op) {
+//
+//                    case '+':
+//                        result = Integer.parseInt(numbers[0])  + Integer.parseInt(numbers[1]);
+//                        Log.d("finalresult" , String.valueOf(result));
+//                        mResultsView.append("  = " +String.valueOf(result));
+//                        break;
+//
+//                    case '-':
+//                        result = Integer.parseInt(numbers[0]) - Integer.parseInt(numbers[1]);
+//                        Log.d("finalresult" , String.valueOf(result));
+//                        mResultsView.append("  = " +String.valueOf(result));
+//                        break;
+//
+//                    case '*':
+//                        result = Integer.parseInt(numbers[0]) * Integer.parseInt(numbers[1]);
+//                        Log.d("finalresult" , String.valueOf(result));
+//                        mResultsView.append("  = " +String.valueOf(result));
+//                        break;
+//
+//                    case '/':
+//                        result = Integer.parseInt(numbers[0]) / Integer.parseInt(numbers[1]);
+//                        Log.d("finalresult" , String.valueOf(result));
+//                        mResultsView.append("  = " +String.valueOf(result));
+//                        break;
+//
+//                        }
+//            }
+//
+//
+//
+
+
+
 
         });
 
     }
 
+
+
+
     @Override
-    public void onSaveInstanceState(Bundle outState)
+        public void onSaveInstanceState(Bundle outState)
     {
 //---save whatever you need to persist—
         outState.putString("stringtobesaved", mResultsView.getText().toString());

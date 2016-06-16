@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">Calculator-lab1-Sagar Dafle</string>
     <string name="welcome_text">Calculator by Daffy</string>
+
+
     <string name="digit_one">1</string>
     <string name="digit_two">2</string>
     <string name="digit_three">3</string>
@@ -18,6 +20,7 @@
     <string name="subtraction">-</string>
     <string name="multiplication">*</string>
     <string name="division">/</string>
+    <string name="decimal">.</string>
 
 
     <string name="results">&#x20;&#x20;&#x20;&#x20;</string>

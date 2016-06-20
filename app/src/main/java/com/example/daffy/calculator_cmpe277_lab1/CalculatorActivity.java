@@ -9,6 +9,9 @@ import android.view.animation.AlphaAnimation;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Stack;
 
 
@@ -318,11 +321,13 @@ public class CalculatorActivity extends AppCompatActivity {
                 Log.d("modified expression" , expression);
 
                 float answer = expressionEvaluater(expression);
+
                 Log.d("FinalAns" , Float.toString(answer));
 
                 if(answer%1 == 0) { //the float value does not contains a decimal, so round it to integer and display
                     Log.d("IN" , " IF FOR MOD");
                     String boldanswer = "<b><i>" + Integer.toString(Math.round(answer)) + "</i></b> " ;
+                    //       dddd if(boldanswer.length() >10) boldanswer = boldanswer.substring(0,8);
                     mResultsView.append(" =" + Html.fromHtml(boldanswer));
                 } else {
                     Log.d("IN" , " ELSE FOR MOD");
@@ -334,7 +339,7 @@ public class CalculatorActivity extends AppCompatActivity {
             private float expressionEvaluater(String expression) {
                 Log.d("The expression is " ,expression);
 
-                //perform chain operations like : "2+3=5 *5=25 +10" = ?
+                //perform chain operations like : "2+3=5 *5=25 +10" = ?"
 
                 if(expression.indexOf("=") >0 ){
                     String[] temp = expression.split("=");
@@ -351,6 +356,7 @@ public class CalculatorActivity extends AppCompatActivity {
                 // Stack for Operators: 'operators'
                 Stack<Character> operators = new Stack<Character>();
 
+
                 for (int i = 0; i < tokens.length; i++)
                 {
                     // Current token is a whitespace, skip it
@@ -361,21 +367,18 @@ public class CalculatorActivity extends AppCompatActivity {
                         digits.push(Float.parseFloat(String.valueOf(tokens[i])));
 
 
-                    // Current token is a number, push it to stack for numbers
-                    if (tokens[i] >= '0' && tokens[i] <= '9')
-                    {
-                        StringBuffer sbuf = new StringBuffer();
-                        // There may be more than one digits in number
-                        while ((i < tokens.length && tokens[i] >= '0' && tokens[i] <= '9') )
-                            sbuf.append(tokens[i++]);
-
-
-                        digits.push(Float.parseFloat(sbuf.toString()));
-                        //if()
-                    }
+//                    // Current token is a number, push it to stack for numbers
+//                    if (tokens[i] >= '0' && tokens[i] <= '9')
+//                    {
+//                        StringBuffer sbuf = new StringBuffer();
+//                        // There may be more than one digits in number
+//                        while ((i < tokens.length && tokens[i] >= '0' && tokens[i] <= '9') )
+//                            sbuf.append(tokens[i++]);
+//                        digits.push(Float.parseFloat(sbuf.toString()));
+//                    }
 
                     // Current token is an opening brace, push it to 'operators'
-                    else if (tokens[i] == '(')
+                     if (tokens[i] == '(')
                         operators.push(tokens[i]);
 
                         // Closing brace encountered, solve entire brace
@@ -399,10 +402,37 @@ public class CalculatorActivity extends AppCompatActivity {
                         // Push current token to 'operators'.
                         operators.push(tokens[i]);
                     }
+
+
+
+                    // Current token is a number, push it to stack for numbers
+                    else
+                    {
+                        StringBuffer sbuf = new StringBuffer();
+                        // There may be more than one digits in number
+                        while ((i < tokens.length && tokens[i] >= '0' && tokens[i] <= '9') )
+                            sbuf.append(tokens[i++]);
+                        digits.push(Float.parseFloat(sbuf.toString()));
+                    }
                 }
 
-                Log.d("Digits stack",digits.toString());
-               // Log.d("Digits stack",digits.toString());
+                Log.d("OGI Digits stack",digits.toString());
+                for(int l=0;l<digits.size();l++){
+                    Log.d("Stack contents++++", String.valueOf(digits.get(l)));
+                }
+                ArrayList<Float> arrlist = new ArrayList<Float>();
+                arrlist = new ArrayList(digits);
+                if(arrlist.size()%2 !=0){
+                    Log.d("Arraylist[0]" , String.valueOf(Math.round(arrlist.get(0))));
+                    Log.d("Arraylist[1]" , String.valueOf(Math.round(arrlist.get(1))));
+                    String temp = String.valueOf(Math.round(arrlist.get(0))) + '.' + String.valueOf(Math.round(arrlist.get(1)));
+                    arrlist.set( 0, Float.valueOf(temp));
+                    arrlist.remove(1);
+                }
+                digits.removeAllElements();
+                digits.addAll(arrlist);
+                Log.d("ArrayList ---------", arrlist.toString());
+                 Log.d("Operators stack",operators.toString());
 
                 // Entire expression has been parsed at this point, apply remaining
                 // operators to remaining digits
@@ -411,7 +441,8 @@ public class CalculatorActivity extends AppCompatActivity {
 
                 // Top of 'digits' contains result, return it
                 float finalans = digits.pop();
-                Log.d("digits Stack" , Float.toString(finalans));
+                Log.d("digits Stack final ans" , Float.toString(finalans));
+
                 return finalans;
             }
 
@@ -447,8 +478,13 @@ public class CalculatorActivity extends AppCompatActivity {
                         return a * b;
                     case '/':
                         if (b == 0)
-                            throw new
-                                    UnsupportedOperationException("Cannot divide by zero");
+                        {
+                            mResultsView.append(" = Invalid operation" );
+                            break;
+                            //throw new
+                                    //UnsupportedOperationException("Cannot divide by zero");
+
+                        }
                         return a / b;
                 }
                 return 0;

@@ -21,7 +21,7 @@ To make sure no data is lost, I've saved and restored the data using the lifecyc
 ####ERROR Handling:
 
 Few corner-cases have been handled like :
-* 1. x/0 returns an "Invalid operation" error to the user.
+* 1. `(x/0)` returns an "Invalid operation" error to the user.
 * 2. The operator`(+,/,+,-)` buttons are disabled till the user enters atleast one digit.
 * 3. The equals`(=)` button is disabled until the user enters two operands and atleast one single operator.
 * 4. If user performs operations like `(a//b" or "a++b")` then the equals(=) button is disabled. 

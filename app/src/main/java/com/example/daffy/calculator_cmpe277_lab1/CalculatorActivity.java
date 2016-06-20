@@ -9,6 +9,7 @@ import android.view.animation.AlphaAnimation;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -441,9 +442,13 @@ public class CalculatorActivity extends AppCompatActivity {
 
                 // Top of 'digits' contains result, return it
                 float finalans = digits.pop();
-                Log.d("digits Stack final ans" , Float.toString(finalans));
 
-                return finalans;
+                //Setting the precision to two digits
+                BigDecimal roundfinalValue = new BigDecimal(finalans).setScale(2,BigDecimal.ROUND_HALF_UP);
+
+                Log.d("digits Stack final ans" , roundfinalValue.toString());
+
+                return Float.valueOf(roundfinalValue.toString());
             }
 
 

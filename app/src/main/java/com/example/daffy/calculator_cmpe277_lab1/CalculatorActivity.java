@@ -3,6 +3,7 @@ package com.example.daffy.calculator_cmpe277_lab1;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
@@ -308,8 +309,10 @@ public class CalculatorActivity extends AppCompatActivity {
         mComputeResults.setEnabled(false);
 
         mComputeResults.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
+
                 Log.d("myTag" , "= pressed");
                 String expression = mResultsView.getText().toString();
 
@@ -335,6 +338,7 @@ public class CalculatorActivity extends AppCompatActivity {
                     String boldanswer = "<b><i>" + Float.toString(answer) + "</i></b> " ;
                     mResultsView.append(" =" +Html.fromHtml(boldanswer));
                 }
+                mResultsView.setMovementMethod(new ScrollingMovementMethod());
             }
 
             private float expressionEvaluater(String expression) {
@@ -368,18 +372,8 @@ public class CalculatorActivity extends AppCompatActivity {
                         digits.push(Float.parseFloat(String.valueOf(tokens[i])));
 
 
-//                    // Current token is a number, push it to stack for numbers
-//                    if (tokens[i] >= '0' && tokens[i] <= '9')
-//                    {
-//                        StringBuffer sbuf = new StringBuffer();
-//                        // There may be more than one digits in number
-//                        while ((i < tokens.length && tokens[i] >= '0' && tokens[i] <= '9') )
-//                            sbuf.append(tokens[i++]);
-//                        digits.push(Float.parseFloat(sbuf.toString()));
-//                    }
-
                     // Current token is an opening brace, push it to 'operators'
-                     if (tokens[i] == '(')
+                    if (tokens[i] == '(')
                         operators.push(tokens[i]);
 
                         // Closing brace encountered, solve entire brace
@@ -433,7 +427,7 @@ public class CalculatorActivity extends AppCompatActivity {
                 digits.removeAllElements();
                 digits.addAll(arrlist);
                 Log.d("ArrayList ---------", arrlist.toString());
-                 Log.d("Operators stack",operators.toString());
+                Log.d("Operators stack",operators.toString());
 
                 // Entire expression has been parsed at this point, apply remaining
                 // operators to remaining digits
@@ -487,7 +481,7 @@ public class CalculatorActivity extends AppCompatActivity {
                             mResultsView.append(" = Invalid operation" );
                             break;
                             //throw new
-                                    //UnsupportedOperationException("Cannot divide by zero");
+                            //UnsupportedOperationException("Cannot divide by zero");
 
                         }
                         return a / b;

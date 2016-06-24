@@ -1,6 +1,8 @@
 # CalculatorUsingAndroid
 This is my first android application where I have built an arithmatic calculatorusing Android.
 
+##APK for android can be downloaded [here](https://github.com/sagardafle/CalculatorUsingAndroid/blob/master/apk_to_download/app-debug.apk) 
+
 ##Some of the features pertaining to android : 
 1. Makes use of android development components like the **LinearLayout, TextView and Buttons**.
 2. The app is **responsive** ( works in portrait as well as landscape mode) .
